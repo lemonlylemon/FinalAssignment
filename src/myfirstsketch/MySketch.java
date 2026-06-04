@@ -4,6 +4,7 @@
  */
 package myfirstsketch;
 import processing.core.PApplet;
+import processing.core.PImage;
 
 /**
  *
@@ -12,26 +13,36 @@ import processing.core.PApplet;
 public class MySketch extends PApplet{
     private Person player;
     int stage = 0;
+    private PImage bg;
+    private PImage characterSelect;
+    private PImage bgStage1;
     
     public void settings() {
-        size(400,400);
+        size(700,400);
     }
     
     public void setup() {
         background(255);
         textSize(20);
-        player = new Person (this, 200, 200, "images/Monkey_King_Idle.png", new PlayerStats(100, 3), new Throw(199, 199, 9, false));
+        player = new Person (this, 200, 200, "images/monkeykingidle.png", new PlayerStats(100, 3), new Throw(199, 199, 9, false));
+        bg = loadImage("images/mainmenubg.png");
+        bgStage1 = loadImage("images/bossroom.jpg");
+        characterSelect = loadImage("images/menuscreenking.png");
     }
     
     public void draw() {
-        background(255, 0 ,0);
+            image(bg, 0, 0, width, height);
+            
         
         if (stage == 0) {
+            image(characterSelect, 120, 30, 450, 397);
             fill(0);
             text("My Cultural Story", 20,50);
             text("Press any key to continue", 20, 100); 
             
         } else if (stage == 1) {
+            fill(0);
+            image(bgStage1, 0,0, width, height);
             player.draw();
             
             if (keyPressed) {
