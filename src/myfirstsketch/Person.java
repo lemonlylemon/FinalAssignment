@@ -10,7 +10,7 @@ import processing.core.PImage;
  * @author 345954069
  */
 public class Person {
-    private int x, y ; //postion of person
+    public int x, y ; //postion of person
     private PlayerStats stats;
     private Throw projectile;
     private PImage image;
@@ -33,6 +33,18 @@ public class Person {
     
     public void draw() {
         app.image(image, x, y); //draw image at person position
+
+    }
+    
+    public boolean isCollidingWith(Person other) {
+        // Check if the bounding boxes of the two persons intersect
+        boolean isLeftOfOtherRight = x < other.x + other.image.width;
+        boolean isRightOfOtherLeft = x + image.width > other.x;
+        boolean isAboveOtherBottom = y < other.y + other.image.height;
+        boolean isBelowOtherTop = y + image.height > other.y;
+
+        return isLeftOfOtherRight && isRightOfOtherLeft
+                && isAboveOtherBottom && isBelowOtherTop;
 
     }
 }
