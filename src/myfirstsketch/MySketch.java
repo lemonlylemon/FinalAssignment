@@ -18,6 +18,8 @@ public class MySketch extends PApplet{
     private PImage characterSelect;
     private PImage bgStage1;
     private int dialogueStep = 0;
+    private PImage dialogue1;
+    private PImage dialogue2;
     
     
     public void settings() {
@@ -30,7 +32,12 @@ public class MySketch extends PApplet{
         bg = loadImage("images/mainmenubg.png");
         bgStage1 = loadImage("images/stage1_2.jpg");
         characterSelect = loadImage("images/menuscreenking.png");
-        ramNPC = new Person(this, 100, 190, "images/ram2.png", new PlayerStats(100, 3), new Throw(199, 199, 9, false));
+        ramNPC = new Person(this, 100, 160, "images/ram2.png", new PlayerStats(100, 3), new Throw(199, 199, 9, false));
+        dialogue1 = loadImage("images/dialoguePic1.png");
+        dialogue1.resize(700, 0);
+        dialogue2 = loadImage("images/dialoguePic2.png");
+        dialogue2.resize(700, 0);
+        
     }
     
     public void draw() {
@@ -68,9 +75,9 @@ public class MySketch extends PApplet{
                 fill(255, 0, 0);
                 
                 if (dialogueStep == 0) {
-                    this.text("Hanuman.. My wife, Sita, has been captured by Demon King Ravana.", ramNPC.x, ramNPC.y);
+                    image(dialogue1,0,265);
                 } else if (dialogueStep == 1) {
-                    this.text("I want you to scout his area so we can go and attack him!", ramNPC.x, ramNPC.y);
+                    image(dialogue2,0,265);
                 }
             } else {
                 dialogueStep = 0; //reset dialogue if player walks away
