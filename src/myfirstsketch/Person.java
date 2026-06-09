@@ -11,7 +11,7 @@ import processing.core.PImage;
  */
 public class Person {
     public int x, y ; //postion of person
-    private PlayerStats stats;
+    public PlayerStats stats;
     private Throw projectile;
     private PImage image;
     private PApplet app;
@@ -34,6 +34,10 @@ public class Person {
     public void draw() {
         app.image(image, x, y); //draw image at person position
 
+    }
+    
+    public PlayerStats getStats() {
+        return stats;
     }
     
     public boolean isCollidingWith(Person other) {

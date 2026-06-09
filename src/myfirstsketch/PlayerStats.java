@@ -10,7 +10,7 @@ package myfirstsketch;
  */
 public class PlayerStats {
     private int playerHealth;
-    private int playerSpeed;
+    private int playerSpeed = 10;
     
     public PlayerStats(int health, int speed) {
         this.playerHealth = health;
@@ -21,7 +21,15 @@ public class PlayerStats {
         return playerHealth;
     }
     
+    public void setHealth(int health) {
+        this.playerHealth = health;
+    }
+    
     public int getSpeed() {
         return playerSpeed;
+    }
+    
+    public void setSpeed(int speed) {
+        this.playerSpeed  = speed;
     }
 }

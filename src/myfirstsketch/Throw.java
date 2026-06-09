@@ -14,7 +14,7 @@ public class Throw {
     private boolean pierce = false;
     
     public Throw(int x, int y, int objectSpeed, boolean pierce) {
-        this.x =x;
+        this.x = x;
         this.y = y;
         this.objectSpeed = objectSpeed;
         this.pierce = pierce;

@@ -13,10 +13,12 @@ import processing.core.PImage;
 public class MySketch extends PApplet{
     private Person player;
     private Person ramNPC;
+    private Person demonBoss;
     int stage = 0;
     private PImage bg;
     private PImage characterSelect;
     private PImage bgStage1;
+    private PImage bossroom;
     private int dialogueStep = 0;
     private PImage dialogue1;
     private PImage dialogue2;
@@ -28,11 +30,13 @@ public class MySketch extends PApplet{
     
     public void setup() {
         background(255);
-        player = new Person (this, 200, 200, "images/monkeykingidle.png", new PlayerStats(100, 3), new Throw(199, 199, 9, false));
+        player = new Person (this, 200, 200, "images/monkeykingidle.png", new PlayerStats(100, 6), new Throw(199, 199, 9, false));
         bg = loadImage("images/mainmenubg.png");
         bgStage1 = loadImage("images/stage1_2.jpg");
+        bossroom = loadImage("images/bossroom.jpg");
         characterSelect = loadImage("images/menuscreenking.png");
         ramNPC = new Person(this, 100, 160, "images/ram2.png", new PlayerStats(100, 3), new Throw(199, 199, 9, false));
+        demonBoss = new Person(this, 100, 160, "images/demonking.png", new PlayerStats(100, 3), new Throw(199, 199, 9, false));
         dialogue1 = loadImage("images/dialoguePic1.png");
         dialogue1.resize(700, 0);
         dialogue2 = loadImage("images/dialoguePic2.png");
@@ -60,13 +64,13 @@ public class MySketch extends PApplet{
             
             if (keyPressed) {
                 if (keyCode == LEFT) {
-                    player.move(-5,0);
+                    player.move(-player.getStats().getSpeed(),0);
                 } else if (keyCode == RIGHT) {
-                    player.move(5,0);
+                    player.move(player.getStats().getSpeed(),0);
                 } else if (keyCode == UP) {
-                    player.move(0, -5);
+                    player.move(0, -player.getStats().getSpeed());
                 } else if (keyCode == DOWN) {
-                    player.move(0, 5);
+                    player.move(0, player.getStats().getSpeed());
                 }
                 
             }
@@ -81,6 +85,38 @@ public class MySketch extends PApplet{
                 }
             } else {
                 dialogueStep = 0; //reset dialogue if player walks away
+            }
+            
+            if (player.x > width) {
+                fill(255, 0, 0);
+                stage = 2;
+                player.x = 0; // Moves player to the left side of new room
+            }
+            
+        } else if (stage == 2) {
+            fill(0);
+            image(bossroom, 0,0, width, height); //loads new room bg
+            player.draw();
+            demonBoss.draw();
+            
+            //movement
+            if (keyPressed) {
+                if (keyCode == LEFT) {
+                    player.move(-player.getStats().getSpeed(),0);
+                } else if (keyCode == RIGHT) {
+                    player.move(player.getStats().getSpeed(),0);
+                } else if (keyCode == UP) {
+                    player.move(0, -player.getStats().getSpeed());
+                } else if (keyCode == DOWN) {
+                    player.move(0, player.getStats().getSpeed());
+                }
+                
+            }
+            
+            if (player.x < 0) {
+                fill(255, 0, 0);
+                stage = 1;
+                player.x = width; // Moves player to the right side of new room
             }
         }
     }
@@ -98,11 +134,17 @@ public class MySketch extends PApplet{
                     dialogueStep++;
                 } 
             }
+        } else if (stage == 2) {
+            if (key == ENTER && player.isCollidingWith(ramNPC)) {
+                if (dialogueStep < 1) {
+                    dialogueStep++;
+                } 
+            }
         }
     }
     
     public void mousePressed() {
-        System.out.println("x: " + mouseX + " y: "  +mouseY);
+        System.out.println("x: " + mouseX + " y: "  + mouseY);
     }
     
     }
