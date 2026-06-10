@@ -11,7 +11,7 @@ import processing.core.PImage;
  * @author 345954069
  */
 public class MySketch extends PApplet{
-    private Person player;
+    private PlayerSprite player;
     private Person ramNPC;
     private Person demonBoss;
     int stage = 0;
@@ -30,13 +30,13 @@ public class MySketch extends PApplet{
     
     public void setup() {
         background(255);
-        player = new Person (this, 200, 200, "images/monkeykingidle.png", new PlayerStats(100, 6), new Throw(199, 199, 9, false));
+        player = new PlayerSprite (this, 200, 200, 0, "images/monkeykingidle.png", new Throw(199, 199));
         bg = loadImage("images/mainmenubg.png");
         bgStage1 = loadImage("images/stage1_2.jpg");
         bossroom = loadImage("images/bossroom.jpg");
         characterSelect = loadImage("images/menuscreenking.png");
-        ramNPC = new Person(this, 100, 160, "images/ram2.png", new PlayerStats(100, 3), new Throw(199, 199, 9, false));
-        demonBoss = new Person(this, 100, 160, "images/demonking.png", new PlayerStats(100, 3), new Throw(199, 199, 9, false));
+        ramNPC = new Person(this, 100, 160, "images/ram2.png", new Throw(199, 199));
+        demonBoss = new Person(this, 100, 160, "images/demonking.png", new Throw(199, 199));
         dialogue1 = loadImage("images/dialoguePic1.png");
         dialogue1.resize(700, 0);
         dialogue2 = loadImage("images/dialoguePic2.png");
@@ -45,8 +45,8 @@ public class MySketch extends PApplet{
     }
     
     public void draw() {
-            image(bg, 0, 0, width, height);
-            
+        image(bg, 0, 0, width, height);
+       
         
         if (stage == 0) {
             textSize(30);
@@ -64,13 +64,13 @@ public class MySketch extends PApplet{
             
             if (keyPressed) {
                 if (keyCode == LEFT) {
-                    player.move(-player.getStats().getSpeed(),0);
+                    player.move(-player.getSpeed(),0);
                 } else if (keyCode == RIGHT) {
-                    player.move(player.getStats().getSpeed(),0);
+                    player.move(player.getSpeed(),0);
                 } else if (keyCode == UP) {
-                    player.move(0, -player.getStats().getSpeed());
+                    player.move(0, -player.getSpeed());
                 } else if (keyCode == DOWN) {
-                    player.move(0, player.getStats().getSpeed());
+                    player.move(0, player.getSpeed());
                 }
                 
             }
@@ -102,13 +102,13 @@ public class MySketch extends PApplet{
             //movement
             if (keyPressed) {
                 if (keyCode == LEFT) {
-                    player.move(-player.getStats().getSpeed(),0);
+                    player.move(-player.getSpeed(),0);
                 } else if (keyCode == RIGHT) {
-                    player.move(player.getStats().getSpeed(),0);
+                    player.move(player.getSpeed(),0);
                 } else if (keyCode == UP) {
-                    player.move(0, -player.getStats().getSpeed());
+                    player.move(0, -player.getSpeed());
                 } else if (keyCode == DOWN) {
-                    player.move(0, player.getStats().getSpeed());
+                    player.move(0, player.getSpeed());
                 }
                 
             }

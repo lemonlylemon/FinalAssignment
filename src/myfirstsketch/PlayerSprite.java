@@ -10,33 +10,32 @@ import processing.core.PImage;
  * @author 345954069
  */
 public class PlayerSprite extends Person {
-    private int throwSpeed; //speed of player's throw
-    private int throwDamage; //damage of projectile thrown
-    private boolean throwPierce = false; //ability of projectile to go through enemies
-    private int monkeyState = 0; //the state/power level of monkey (player)
-    
+    public int monkeyState = 0; //the state/power level of monkey (player)
+    private int playerHealth;
+    private static final int MAX_HEALTH = 100;
+    private int playerSpeed;
+    private static final int BASE_PLAYER_SPEED = 7;
+    private int speedMod = 1;
         
-    public PlayerSprite(PApplet app, int x, int y, int throwSpeed, int throwDmg, boolean throwPierce, int monkeyState, String imagePath, PlayerStats stats, Throw projectile) {
-        super(app, x, y, imagePath, stats, projectile);
-        this.throwSpeed = throwSpeed;
-        this.throwDamage = throwDmg;
-        this.throwPierce = throwPierce;
+    public PlayerSprite(PApplet app, int x, int y, int monkeyState, String imagePath, Throw projectile) {
+        super(app, x, y, imagePath, projectile);
         this.monkeyState = monkeyState;
+        this.playerHealth = MAX_HEALTH;
+        this.playerSpeed = BASE_PLAYER_SPEED;
     }
     
-    public int getThrowSpeed() {
-        return throwSpeed;
-    }
-    
-    public int getThrowDmg() {
-        return throwDamage;
-    }
-    
-    public boolean getthrowPierce() {
-        return throwPierce;
+    public int getSpeed() {
+        return playerSpeed * speedMod;
     }
     
     public int getMonkeyState() {
         return monkeyState;
+    }
+    
+    public void update() {
+        if (playerHealth <= MAX_HEALTH/2) {
+            monkeyState++;
+            speedMod = 2;
+        }
     }
 }

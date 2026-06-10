@@ -11,13 +11,20 @@ package myfirstsketch;
 public class Throw {
     private int x, y;
     private int objectSpeed;
-    private boolean pierce = false;
+    private static final int BASE_PROJECTILE_SPEED = 10;
+    private int damage;
+    private static final int BASE_DAMAGE = 5;
+    private int damageMod;
     
-    public Throw(int x, int y, int objectSpeed, boolean pierce) {
+    // Define screen dimensions (adjust these numbers to match your actual window size)
+    private static final int SCREEN_WIDTH = 700;
+    private static final int SCREEN_HEIGHT = 400;
+    
+    public Throw(int x, int y) {
         this.x = x;
         this.y = y;
-        this.objectSpeed = objectSpeed;
-        this.pierce = pierce;
+        this.objectSpeed = BASE_PROJECTILE_SPEED;
+        this.damage = BASE_DAMAGE;
     }
     
     public int getPosX() {
@@ -32,7 +39,30 @@ public class Throw {
         return objectSpeed;
     }
     
-    public boolean getPierce() {
-        return pierce;
+    public void setObjSpeed(int speed) {
+        this.objectSpeed = speed;
     }
+    
+    public int getThrowDmg() {
+        return damage;
+    }
+    
+//    if ( .getMonkeyState() == 0)
+    
+    /**
+     * Helper method to check if the projectile is currently on the screen.
+     * @return returns true of false based on whats said above
+     */
+    public boolean isInScreen() {
+        return x >= 0 && x <= SCREEN_WIDTH && y >= 0 && y <= SCREEN_HEIGHT;    
+    }
+    
+    public void spawn(int shooterX, int shooterY) {
+        if (isInScreen()) {
+            return;
+        }
+        // Otherwise, reset its position to the shooter's position
+        this.x = shooterX;
+        this.y = shooterY;
+       }
 }
