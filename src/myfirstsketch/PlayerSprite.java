@@ -15,7 +15,8 @@ public class PlayerSprite extends Person {
     private static final int MAX_HEALTH = 100;
     private int playerSpeed;
     private static final int BASE_PLAYER_SPEED = 7;
-    private int speedMod = 1;
+    private int playerSpeedMod = 1;
+    private int damageMod = 1;
         
     public PlayerSprite(PApplet app, int x, int y, int monkeyState, String imagePath, Throw projectile) {
         super(app, x, y, imagePath, projectile);
@@ -25,7 +26,7 @@ public class PlayerSprite extends Person {
     }
     
     public int getSpeed() {
-        return playerSpeed * speedMod;
+        return playerSpeed * playerSpeedMod;
     }
     
     public int getMonkeyState() {
@@ -35,7 +36,8 @@ public class PlayerSprite extends Person {
     public void update() {
         if (playerHealth <= MAX_HEALTH/2) {
             monkeyState++;
-            speedMod = 2;
+            playerSpeedMod = 2;
+            damageMod = 2;
         }
     }
 }
