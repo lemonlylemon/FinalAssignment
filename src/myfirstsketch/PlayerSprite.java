@@ -18,8 +18,8 @@ public class PlayerSprite extends Person {
     private int playerSpeedMod = 1;
     private int damageMod = 1;
         
-    public PlayerSprite(PApplet app, int x, int y, int monkeyState, String imagePath, Throw projectile) {
-        super(app, x, y, imagePath, projectile);
+    public PlayerSprite(PApplet app, int x, int y, int monkeyState, String imagePath) {
+        super(app, x, y, imagePath);
         this.monkeyState = monkeyState;
         this.playerHealth = MAX_HEALTH;
         this.playerSpeed = BASE_PLAYER_SPEED;

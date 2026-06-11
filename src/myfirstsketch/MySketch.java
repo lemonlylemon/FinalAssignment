@@ -13,8 +13,10 @@ import processing.core.PImage;
 public class MySketch extends PApplet{
     private PlayerSprite player;
     private Person ramNPC;
+    private Throw mountain;
     private Person demonBoss;
     int stage = 0;
+    private boolean isCarryingMountain = false;
     private PImage bg;
     private PImage characterSelect;
     private PImage bgStage1;
@@ -22,6 +24,7 @@ public class MySketch extends PApplet{
     private int dialogueStep = 0;
     private PImage dialogue1;
     private PImage dialogue2;
+    private PImage emptyDialogue;
     
     
     public void settings() {
@@ -30,17 +33,21 @@ public class MySketch extends PApplet{
     
     public void setup() {
         background(255);
-        player = new PlayerSprite (this, 200, 200, 0, "images/monkeykingidle.png", new Throw(199, 199));
+        player = new PlayerSprite (this, 200, 200, 0, "images/monkeykingidle.png");
+        mountain = new Throw (this, 600,300, "images/mountainResize.png");
         bg = loadImage("images/mainmenubg.png");
         bgStage1 = loadImage("images/stage1_2.jpg");
         bossroom = loadImage("images/bossroom.jpg");
         characterSelect = loadImage("images/menuscreenking.png");
-        ramNPC = new Person(this, 100, 160, "images/ram2.png", new Throw(199, 199));
-        demonBoss = new Person(this, 100, 160, "images/demonking.png", new Throw(199, 199));
+        ramNPC = new Person(this, 100, 160, "images/ram2.png");
+        demonBoss = new Person(this, 100, 160, "images/demonResize.png");
         dialogue1 = loadImage("images/dialoguePic1.png");
         dialogue1.resize(700, 0);
         dialogue2 = loadImage("images/dialoguePic2.png");
         dialogue2.resize(700, 0);
+        emptyDialogue = loadImage("images/emptyDialgue.png"); //image for the text
+        
+        
         
     }
     
@@ -97,20 +104,48 @@ public class MySketch extends PApplet{
             fill(0);
             image(bossroom, 0,0, width, height); //loads new room bg
             player.draw();
-            demonBoss.draw();
+//            demonBoss.draw();
+            mountain.draw();
             
-            //movement
+            // movement
             if (keyPressed) {
+                int dx = 0;
+                int dy = 0;
+                
                 if (keyCode == LEFT) {
-                    player.move(-player.getSpeed(),0);
+                    dx = -player.getSpeed();
                 } else if (keyCode == RIGHT) {
-                    player.move(player.getSpeed(),0);
+                    dx = player.getSpeed();
                 } else if (keyCode == UP) {
-                    player.move(0, -player.getSpeed());
+                    dy = -player.getSpeed();
                 } else if (keyCode == DOWN) {
-                    player.move(0, player.getSpeed());
+                    dy = player.getSpeed();
                 }
                 
+                // Move the player using the calculated values
+                player.move(dx, dy);
+                
+                // If the player is carrying the mountain, move the mountain by the same amount
+                if (isCarryingMountain) {
+                    mountain.move(dx, dy);
+                }
+            }
+            
+            
+            
+            // collision
+            // 2. COLLISION & CARRY MECHANIC
+            if (!isCarryingMountain) {
+                if (player.isCollidingWith((Object) mountain)) {
+                    // 1. Vertical Snap: Place player right under the mountain (adjusting for transparent pixels if needed)
+                    player.y = mountain.getPosY() + mountain.image.height - 30;
+
+                    // 2. Horizontal Snap: Center the player perfectly along the mountain's width
+                    player.x = mountain.getPosX() + (mountain.image.width / 2) - (player.getImage().width / 2);
+
+                    // Activate the carrying lock
+                    isCarryingMountain = true; 
+                }
             }
             
             if (player.x < 0) {
