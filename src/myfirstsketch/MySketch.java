@@ -25,6 +25,7 @@ public class MySketch extends PApplet{
     private PImage characterSelect;
     private PImage bgStage1;
     private PImage bossroom;
+    private PImage lairbg;
     private int dialogueStep = 0;
     private PImage dialogue1;
     private PImage dialogue2;
@@ -46,6 +47,8 @@ public class MySketch extends PApplet{
         characterSelect = loadImage("images/menuscreenking.png");
         ramNPC = new Person(this, 100, 160, "images/ram2.png");
         demonBoss = new Person(this, 100, 160, "images/demonResize.png");
+        lairbg = loadImage("images/1.PNG");
+        lairbg.resize(700,0);
         dialogue1 = loadImage("images/dialoguePic1.png");
         dialogue1.resize(700, 0);
         dialogue2 = loadImage("images/dialoguePic2.png");
@@ -133,18 +136,6 @@ public class MySketch extends PApplet{
                 dialogueStep = 0;
             }
 
-
-
-
-//                if (dialogueStep == 0) {
-//                    image(dialogue1,0,265);
-//                } else if (dialogueStep == 1) {
-//                    image(dialogue2,0,265);
-//                }
-//                } else {
-//                    dialogueStep = 0; //reset dialogue if player walks away
-//                }
-            
             //If player goes all the way to the right side of current room
             if (player.x > width) {
                 fill(255, 0, 0);
@@ -156,7 +147,6 @@ public class MySketch extends PApplet{
             fill(0);
             image(bossroom, 0,0, width, height); //loads new room bg
             player.draw();
-//            demonBoss.draw();
             mountain.draw();
             drawHealthBar();
             
@@ -187,9 +177,7 @@ public class MySketch extends PApplet{
             }
             
             
-            
-            // collision
-            // 2. COLLISION & CARRY MECHANIC
+            // MOUNTAIN COLLISION & CARRY MECHANIC
             if (!isCarryingMountain) {
                 if (player.isCollidingWith((Object) mountain)) {
                     // 1. Vertical Snap: Place player right under the mountain (adjusting for transparent pixels if needed)
@@ -209,7 +197,66 @@ public class MySketch extends PApplet{
                 stage = 1;
                 player.x = width; // Moves player to the right side of new room
             }
+            
+            //room of stage 3
+            if (player.x > width) {
+                fill(255, 0, 0);
+                stage = 3;
+                player.x = 0; // Moves player to the left side of new room
+            }
+            
+        } else if (stage == 3) {
+            fill(0);
+            image(lairbg, 0,0, width, height); //loads new room bg
+            player.draw();
+            demonBoss.draw();
+            mountain.draw();
+            
+            drawHealthBar();
+            
+            manageProjectiles();
+            
+            // movement
+            if (keyPressed) {
+                int dx = 0;
+                int dy = 0;
+                
+                if (keyCode == LEFT) {
+                    dx = -player.getSpeed();
+                } else if (keyCode == RIGHT) {
+                    dx = player.getSpeed();
+                } else if (keyCode == UP) {
+                    dy = -player.getSpeed();
+                } else if (keyCode == DOWN) {
+                    dy = player.getSpeed();
+                }
+                
+                // Move the player using the calculated values
+                player.move(dx, dy);
+                
+                // If the player is carrying the mountain, move the mountain by the same amount
+                if (isCarryingMountain) {
+                    mountain.move(dx, dy);
+                }
+            }
+            
+            
+            // MOUNTAIN COLLISION & CARRY MECHANIC
+            if (!isCarryingMountain) {
+                if (player.isCollidingWith((Object) mountain)) {
+                    // 1. Vertical Snap: Place player right under the mountain (adjusting for transparent pixels if needed)
+                    player.y = mountain.getPosY() + mountain.image.height - 30;
+
+                    // 2. Horizontal Snap: Center the player perfectly along the mountain's width
+                    player.x = mountain.getPosX() + (mountain.image.width / 2) - (player.getImage().width / 2);
+
+                    // Activate the carrying lock
+                    isCarryingMountain = true; 
+                }
+            }
+            
         }
+        
     }
             
     public void keyPressed() {
