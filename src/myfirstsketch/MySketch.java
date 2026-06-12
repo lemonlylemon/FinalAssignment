@@ -6,6 +6,9 @@ package myfirstsketch;
 import processing.core.PApplet;
 import processing.core.PImage;
 import java.util.ArrayList;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
 
 /**
  *
@@ -27,7 +30,7 @@ public class MySketch extends PApplet{
     private PImage dialogue2;
     private PImage emptyDialogue;
     private ArrayList<Throw> projectiles = new ArrayList<Throw>();
-    
+    private ArrayList<String> dialogueLines = new ArrayList<String>(); // Use an ArrayList for dynamic loading
     
     public void settings() {
         size(700,400);
@@ -47,10 +50,27 @@ public class MySketch extends PApplet{
         dialogue1.resize(700, 0);
         dialogue2 = loadImage("images/dialoguePic2.png");
         dialogue2.resize(700, 0);
-        emptyDialogue = loadImage("images/emptyDialgue.png"); //image for the text
+        emptyDialogue = loadImage("images/emptyDialogue.png"); //image for the text
+        emptyDialogue.resize(700,0);
         
+        loadDialogueFile(); //do the fileIO inside a method
         
-        
+    }
+    
+    public void loadDialogueFile() {
+        try {
+            File file = new File(dataPath("dialogue.txt"));
+            Scanner output  = new Scanner(file);
+            
+            while(output.hasNextLine()) { //keep reading next line
+                String line = output.nextLine(); 
+                dialogueLines.add(line); //add teh lines to the array list
+            }
+            output.close(); //close scanner
+        } catch (FileNotFoundException e) {
+            System.out.println("Error: Can't find the file at" + dataPath("dialogue.txt"));
+            
+        }
     }
     
     public void draw() {
@@ -99,17 +119,33 @@ public class MySketch extends PApplet{
             }
             
             if (player.isCollidingWith(ramNPC)) {
-                fill(255, 0, 0);
+                image(emptyDialogue, 0,265); //draw the dialogue box
                 
-                if (dialogueStep == 0) {
-                    image(dialogue1,0,265);
-                } else if (dialogueStep == 1) {
-                    image(dialogue2,0,265);
+                fill(255);
+                textSize(26);
+                textAlign(LEFT,TOP);
+                
+                if (!dialogueLines.isEmpty() && dialogueStep < dialogueLines.size()) {
+                    // Setting a bounding box (x, y, width, height) lets the text auto-wrap inside the box
+                    text(dialogueLines.get(dialogueStep), 40, 285, 620, 100);
                 }
             } else {
-                dialogueStep = 0; //reset dialogue if player walks away
+                dialogueStep = 0;
             }
+
+
+
+
+//                if (dialogueStep == 0) {
+//                    image(dialogue1,0,265);
+//                } else if (dialogueStep == 1) {
+//                    image(dialogue2,0,265);
+//                }
+//                } else {
+//                    dialogueStep = 0; //reset dialogue if player walks away
+//                }
             
+            //If player goes all the way to the right side of current room
             if (player.x > width) {
                 fill(255, 0, 0);
                 stage = 2;
@@ -167,6 +203,7 @@ public class MySketch extends PApplet{
                 }
             }
             
+            //If player goes all the way to the left side of current room
             if (player.x < 0) {
                 fill(255, 0, 0);
                 stage = 1;
@@ -184,9 +221,9 @@ public class MySketch extends PApplet{
         
         if (stage == 1) {
             if (key == ENTER && player.isCollidingWith(ramNPC)) {
-                if (dialogueStep < 1) {
+                if (dialogueStep < dialogueLines.size() - 1) { //stop the index from going out of bounds using the size()
                     dialogueStep++;
-                } 
+                }
             }
         } else if (stage == 2) {
             if (key == ' ') { //checks spacebar
