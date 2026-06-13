@@ -10,7 +10,7 @@ import processing.core.PImage;
  * @author 345954069
  */
 public class Throw {
-    private int x, y;
+    public int x, y;
     public PImage image;
     private PApplet app;
     private int objectSpeed;

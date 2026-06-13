@@ -36,18 +36,6 @@ public class Person {
     return this.image;
 }
     
-//    public boolean isCollidingWith(Person other) {
-//        // Check if the bounding boxes of the two persons intersect
-//        boolean isLeftOfOtherRight = x < other.x + other.image.width;
-//        boolean isRightOfOtherLeft = x + image.width > other.x;
-//        boolean isAboveOtherBottom = y < other.y + other.image.height;
-//        boolean isBelowOtherTop = y + image.height > other.y;
-//
-//        return isLeftOfOtherRight && isRightOfOtherLeft
-//                && isAboveOtherBottom && isBelowOtherTop;
-//
-//    }
-    
     // POLYMORPHIC METHOD TO RUN BOTH PERSON COLLISION AND THROW COLLISION
     public boolean isCollidingWith(Object other) {
     int otherX = 0;

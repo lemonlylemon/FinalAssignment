@@ -19,6 +19,9 @@ public class MySketch extends PApplet{
     private Person ramNPC;
     private Throw mountain;
     private Person demonBoss;
+    private int bossDirectionY = 1;
+    private int bossSpeed = 20;
+    private int bossHitSpeed = 10;
     int stage = 0;
     private boolean isCarryingMountain = false;
     private PImage bg;
@@ -31,6 +34,8 @@ public class MySketch extends PApplet{
     private PImage dialogue2;
     private PImage emptyDialogue;
     private ArrayList<Throw> projectiles = new ArrayList<Throw>();
+    private ArrayList<Throw> bossAttacks = new ArrayList<Throw>();
+    
     private ArrayList<String> dialogueLines = new ArrayList<String>(); // Use an ArrayList for dynamic loading
     
     public void settings() {
@@ -46,8 +51,8 @@ public class MySketch extends PApplet{
         bossroom = loadImage("images/bossroom.jpg");
         characterSelect = loadImage("images/menuscreenking.png");
         ramNPC = new Person(this, 100, 160, "images/ram2.png");
-        demonBoss = new Person(this, 100, 160, "images/demonResize.png");
-        lairbg = loadImage("images/1.PNG");
+        demonBoss = new Person(this, 500, 160, "images/demonResize.png");
+        lairbg = loadImage("images/demonlair.jpg");
         lairbg.resize(700,0);
         dialogue1 = loadImage("images/dialoguePic1.png");
         dialogue1.resize(700, 0);
@@ -202,12 +207,60 @@ public class MySketch extends PApplet{
             if (player.x > width) {
                 fill(255, 0, 0);
                 stage = 3;
-                player.x = 0; // Moves player to the left side of new room
+            
+            // If carrying the mountain, calculate its new position relative to the player before resetting player.x
+            if (isCarryingMountain) {
+                // Maintain the horizontal snap math you used earlier
+                mountain.x = 0 + (mountain.image.width / 2) - (player.getImage().width / 2);
+                // Keep the vertical snap position intact
+                mountain.y = player.y - mountain.image.height + 30; 
+            }
+
+            player.x = 0; // Moves player to the left side of new room
             }
             
         } else if (stage == 3) {
             fill(0);
             image(lairbg, 0,0, width, height); //loads new room bg
+            
+            //BOSS MOVEMENT
+            
+            // boss y position
+            float bossY = demonBoss.y +(bossSpeed * bossDirectionY);
+            //check screen bounds
+            if (bossY < 0 || bossY > height - 200) { 
+                bossDirectionY *= -1; //reverse boss direction if reach ends of screen
+            }
+            //auto movement of boss
+            demonBoss.move(0, (int)(bossSpeed * bossDirectionY));
+            
+            //BOSS ATTACKS
+            if (frameCount % 60 == 0) { //for each 60 frames, one projectile is thrown
+                //spawn projectile form boss current posiiton
+                Throw bossAttack = new Throw(this, demonBoss.x, demonBoss.y, "images/demonFireball.png");
+                bossAttacks.add(bossAttack);
+            }
+            
+            for (int i = bossAttacks.size() - 1; i>=0; i--) {
+                Throw ba = bossAttacks.get(i);
+                
+                ba.x -= bossHitSpeed; //speed at which boss projectiles goes left
+                
+                ba.draw();
+                
+                if (player.isCollidingWith((Object) ba)) {
+                player.playerHealth -= 10; //reduce player health by 10
+                bossAttacks.remove(i);
+                System.out.println("Player Hit!!" + player.playerHealth);
+                continue;
+                }
+                
+                //remove boss attacks if missed and off screen
+                if (ba.x < -10) {
+                    bossAttacks.remove(i);
+                }  
+            }
+            
             player.draw();
             demonBoss.draw();
             mountain.draw();
@@ -272,7 +325,7 @@ public class MySketch extends PApplet{
                     dialogueStep++;
                 }
             }
-        } else if (stage == 2) {
+        } else if (stage == 2 || stage == 3) {
             if (key == ' ') { //checks spacebar
                 // Create a new projectile at the player's X and Y coordinates
                 Throw newProjectile = new Throw(this, player.x, player.y, "images/mountainResize.png");
@@ -293,7 +346,15 @@ public class MySketch extends PApplet{
             Throw p = projectiles.get(i);
             p.update();
             p.draw();
+            
+            //Check collision with the Boss if we are on Stage 3
+            if (stage == 3 && demonBoss.isCollidingWith(p)) { //if boss collided with projectile
+                System.out.println("Boss hit");
+                projectiles.remove(i);
+            }
 
+            
+            
             // Check if it not on screen anymore, if yes then remove it
             if (!p.isInScreen()) {
                 projectiles.remove(i);
