@@ -23,6 +23,8 @@ public class MySketch extends PApplet{
     private int bossSpeed = 20;
     private int bossHitSpeed = 10;
     int stage = 0;
+    private int bossHealth = 500;
+    private int BOSS_MAX_HEALTH = 500;
     private boolean isCarryingMountain = false;
     private PImage bg;
     private PImage characterSelect;
@@ -33,6 +35,7 @@ public class MySketch extends PApplet{
     private PImage dialogue1;
     private PImage dialogue2;
     private PImage emptyDialogue;
+    private PImage gameOver;
     private ArrayList<Throw> projectiles = new ArrayList<Throw>();
     private ArrayList<Throw> bossAttacks = new ArrayList<Throw>();
     
@@ -60,6 +63,8 @@ public class MySketch extends PApplet{
         dialogue2.resize(700, 0);
         emptyDialogue = loadImage("images/emptyDialogue.png"); //image for the text
         emptyDialogue.resize(700,0);
+        gameOver = loadImage("images/gameOver.jpg");
+        gameOver.resize(700,0);
         
         loadDialogueFile(); //do the fileIO inside a method
         
@@ -88,9 +93,10 @@ public class MySketch extends PApplet{
         if (stage == 0) {
             textSize(30);
             image(characterSelect, 120, 30, 450, 397);
+            textAlign(CENTER, CENTER);
             fill(0);
-            text("My Cultural Story", 240,50);
-            text("Press ENTER to continue", 190, 100); 
+            text("My Cultural Story", width/2,50);
+            text("Press ENTER to continue", width/2, 100); 
             
         } else if (stage == 1) {
             textSize(20);
@@ -157,8 +163,11 @@ public class MySketch extends PApplet{
             
             manageProjectiles();
             
+            //check if player is touching mountian but not picked it up yet
+            boolean touchingMountain = player.isCollidingWith((Object) mountain) && !isCarryingMountain;
+            
             // movement
-            if (keyPressed) {
+            if (keyPressed && !touchingMountain) {
                 int dx = 0;
                 int dy = 0;
                 
@@ -172,13 +181,23 @@ public class MySketch extends PApplet{
                     dy = player.getSpeed();
                 }
                 
-                // Move the player using the calculated values
                 player.move(dx, dy);
                 
                 // If the player is carrying the mountain, move the mountain by the same amount
                 if (isCarryingMountain) {
                     mountain.move(dx, dy);
                 }
+            }
+            
+            if (touchingMountain) {
+                if (dialogueStep > 3) {
+                    dialogueStep = 3;
+                }
+                image(emptyDialogue, 0, 265);
+                fill(255);
+                textAlign(LEFT, TOP);
+                
+                
             }
             
             
@@ -235,7 +254,7 @@ public class MySketch extends PApplet{
             demonBoss.move(0, (int)(bossSpeed * bossDirectionY));
             
             //BOSS ATTACKS
-            if (frameCount % 60 == 0) { //for each 60 frames, one projectile is thrown
+            if (frameCount % 30 == 0) { //for each 60 frames, one projectile is thrown
                 //spawn projectile form boss current posiiton
                 Throw bossAttack = new Throw(this, demonBoss.x, demonBoss.y, "images/demonFireball.png");
                 bossAttacks.add(bossAttack);
@@ -266,6 +285,7 @@ public class MySketch extends PApplet{
             mountain.draw();
             
             drawHealthBar();
+            drawBossHealthBar();
             
             manageProjectiles();
             
@@ -308,11 +328,32 @@ public class MySketch extends PApplet{
                 }
             }
             
+        } else if (stage == 9) {
+            fill(0);
+            image(gameOver, 0,0, width, height); //loads new room bg
         }
         
     }
             
     public void keyPressed() {
+        if (stage == 9) {
+            player.playerHealth = player.MAX_HEALTH;
+            player.x = 200;
+            player.y = 200;
+            
+            //remove any remaining projectiles
+            projectiles.clear();
+            bossAttacks.clear();
+            
+            bossHealth = BOSS_MAX_HEALTH;
+            
+            isCarryingMountain = false;
+            mountain.x = 342;
+            mountain.y = 238;
+            
+            stage = 0;
+        }
+        
         if (stage == 0) {
             if (keyCode == ENTER) {
                 stage = 1;
@@ -321,11 +362,20 @@ public class MySketch extends PApplet{
         
         if (stage == 1) {
             if (key == ENTER && player.isCollidingWith(ramNPC)) {
-                if (dialogueStep < dialogueLines.size() - 1) { //stop the index from going out of bounds using the size()
+                if (dialogueStep < 2) { //stop the index from going out of number of lines said in stage 1
                     dialogueStep++;
+                } else {
+                    //if on the alst line clsoe dialogue
+                    dialogueStep = 0;
+                    //move player away from npc so aren't colliding -> box doesnt show
+                    player.x += 40;
                 }
             }
-        } else if (stage == 2 || stage == 3) {
+        }  else if (stage == 2) {
+                if (key == ENTER && !isCarryingMountain) {
+                    dialogueStep++;
+                }
+            } else if (stage == 2 || stage == 3) {
             if (key == ' ') { //checks spacebar
                 // Create a new projectile at the player's X and Y coordinates
                 Throw newProjectile = new Throw(this, player.x, player.y, "images/mountainResize.png");
@@ -350,7 +400,14 @@ public class MySketch extends PApplet{
             //Check collision with the Boss if we are on Stage 3
             if (stage == 3 && demonBoss.isCollidingWith(p)) { //if boss collided with projectile
                 System.out.println("Boss hit");
+                bossHealth -= 20; //per hit, reduce by 20 hp
                 projectiles.remove(i);
+                
+                //check for if boss has died
+                if (bossHealth <= 0) {
+                    bossHealth = 0;
+                    //stage = 4
+                }
             }
 
             
@@ -365,32 +422,68 @@ public class MySketch extends PApplet{
     
     //HEALTH OF MONKEY KING
     public void drawHealthBar() {
-    float barWidth = 200; // Total width of the health bar
-    float barHeight = 20; // Height of the health bar
-    float x = 20;         // X position on the screen
-    float y = 20;         // Y position on the screen
-    
-    // 1. Calculate the health ratio
-    // (Assuming player.health and player.maxHealth exist)
-    float healthRatio = (float) player.playerHealth / player.MAX_HEALTH;
-    
-    // Stop the bar from stretching if health goes out of bounds
-    healthRatio = constrain(healthRatio, 0, 1); 
+        
+        //check for if player has died
+        if (player.playerHealth <= 0) {
+            player.playerHealth = 0;
+            stage = 9;
+            return;
+        }
 
-    // 2. Draw the background (Red/Empty bar)
-    fill(250, 50, 50);
-    noStroke();
-    rect(x, y, barWidth, barHeight, 5); // 5 is for slightly rounded corners
+        float barWidth = 200; // Total width of the health bar
+        float barHeight = 20; // Height of the health bar
+        float x = 20;         // X position on the screen
+        float y = 20;         // Y position on the screen
 
-    // 3. Draw the foreground (Green/Current health)
-    fill(50, 220, 50);
-    rect(x, y, barWidth * healthRatio, barHeight, 5);
+        //calculate the health ratio
+        float healthRatio = (float) player.playerHealth / player.MAX_HEALTH;
+
+        // Stop the bar from stretching if health is out of bounds
+        healthRatio = constrain(healthRatio, 0, 1); 
+
+        // 2. Draw the background (Red/Empty bar)
+        fill(250, 50, 50);
+        noStroke();
+        rect(x, y, barWidth, barHeight, 5); // 5 is for slightly rounded corners
+
+        // 3. Draw the foreground (Green/Current health)
+        fill(50, 220, 50);
+        rect(x, y, barWidth * healthRatio, barHeight, 5);
+
+        // Optional: Add a nice dark border around the whole thing
+        noFill();
+        stroke(0);
+        strokeWeight(2);
+        rect(x, y, barWidth, barHeight, 5);
+    }
     
-    // Optional: Add a nice dark border around the whole thing
-    noFill();
-    stroke(0);
-    strokeWeight(2);
-    rect(x, y, barWidth, barHeight, 5);
+    public void drawBossHealthBar() {
+        float barWidth = 200;
+        float barHeight = 20;
+        float x = width - barWidth - 20; //position it 20px from right of screen
+        float y = 20;
+        
+        //calculate boss health ratio
+        float healthRatio = (float) bossHealth/BOSS_MAX_HEALTH;
+        healthRatio  = constrain(healthRatio, 0, 1);
+        
+        fill(80,80,80);
+        noStroke();
+        rect(x,y,barWidth,barHeight, 5);
+        
+        fill(255,69,0);
+        rect(x,  y, barWidth * healthRatio, barHeight, 5);
+        
+        noFill();
+        stroke(0);
+        strokeWeight(2);
+        rect(x, y, barWidth, barHeight, 5);
+        
+        //name of health bar
+        fill(255);
+        textSize(14);
+        textAlign(RIGHT, BOTTOM);
+        text("DEMON BOSS", x + barWidth, y - 2);
     }
     
 }
