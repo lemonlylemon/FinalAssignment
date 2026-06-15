@@ -16,7 +16,7 @@ public class Throw {
     private int objectSpeed;
     private static final int BASE_PROJECTILE_SPEED = 10;
     private int damage;
-    private static final int BASE_DAMAGE = 5;
+    private static final int BASE_DAMAGE = 28;
     private int damageMod;
     
     // Define screen dimensions (adjust these numbers to match your actual window size)

@@ -53,6 +53,13 @@ public class MySketch extends PApplet{
     private ArrayList<String> dialogueStage4Lines = new ArrayList<String>(); // Use an ArrayList for dynamic loading
 
     private boolean bossDoneDialogue = false;
+    
+    //boss attack pattern: 1 = spawn fireball, 0 = safe area
+    private int [][] bossPattern = {
+        {1, 0, 1}, 
+        {1, 1, 0},
+        {0, 1, 1}
+    };
 
     
     public void settings() {
@@ -294,11 +301,30 @@ public class MySketch extends PApplet{
                 //auto movement of boss
                 demonBoss.move(0, (int)(bossSpeed * bossDirectionY));
 
-                //BOSS ATTACKS
+                //BOSS ATTACKS (RANDOM)
                 if (frameCount % 20 == 0) { //for each 60 frames, one projectile is thrown
                     //spawn projectile form boss current posiiton
                     Throw bossAttack = new Throw(this, demonBoss.x, demonBoss.y, "images/demonFireballs.png");
                     bossAttacks.add(bossAttack);
+                }
+                
+                //BOSS ATTACKS (PATTERN)
+                if (frameCount % 80 == 0) { 
+                    int spacingX = 40; // Horizontal distance between fireballs
+                    int spacingY = 50; // Vertical distance between fireballs
+
+                    // Loop through the 2D array to spawn the patterned grid
+                    for (int r = 0; r < bossPattern.length; r++) {
+                        for (int c = 0; c < bossPattern[r].length; c++) {
+                            if (bossPattern[r][c] == 1) {
+                                int spawnX = demonBoss.x + (c * spacingX);
+                                int spawnY = demonBoss.y + (r * spacingY);
+
+                                Throw bossAttack = new Throw(this, spawnX, spawnY, "images/demonFireballs.png");
+                                bossAttacks.add(bossAttack);
+                            }
+                        }
+                    }
                 }
 
                 for (int i = bossAttacks.size() - 1; i>=0; i--) {
@@ -561,7 +587,7 @@ public class MySketch extends PApplet{
             //Check collision with the Boss if we are on Stage 3
             if (stage == 3 && demonBoss.isCollidingWith(p)) { //if boss collided with projectile
                 System.out.println("Boss hit");
-                bossHealth -= 20; //per hit, reduce by 20 hp
+                bossHealth -= mountain.getThrowDmg(); //per hit, reduce by 28 hp
                 projectiles.remove(i);
                 
                 //check for if boss has died
@@ -577,13 +603,9 @@ public class MySketch extends PApplet{
                         mountain.x = player.x + (player.getImage().width / 2) - (mountain.image.width / 2);
                         mountain.y = player.y - mountain.image.height + 30; 
                     }
-                    
                     return;
                 }
             }
-
-            
-            
             // Check if it not on screen anymore, if yes then remove it
             if (!p.isInScreen()) {
                 projectiles.remove(i);
