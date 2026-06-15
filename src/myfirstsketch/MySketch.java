@@ -551,7 +551,7 @@ public class MySketch extends PApplet{
         System.out.println("x: " + mouseX + " y: "  + mouseY);
     }
     
-    // Helper method to keep our main stage blocks cleanly organized
+    //method to keep stage blocks organized
     public void manageProjectiles() {
         for (int i = projectiles.size() - 1; i >= 0; i--) {
             Throw p = projectiles.get(i);
