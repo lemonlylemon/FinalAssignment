@@ -68,7 +68,7 @@ public class MySketch extends PApplet{
         bossroom = loadImage("images/bossroom.jpg");
         characterSelect = loadImage("images/menuscreenking.png");
         ramNPC = new Person(this, 100, 160, "images/ram2.png");
-        sitaNPC = new Person(this, 600, 160, "images/sitaResize.png");
+        sitaNPC = new Person(this, 500, 160, "images/sitaResize.png");
         demonBoss = new Person(this, 500, 20, "images/demonResizes.png");
         lairbg = loadImage("images/demonlair.jpg");
         lairbg.resize(700,0);
@@ -105,7 +105,7 @@ public class MySketch extends PApplet{
             }
             output.close(); //close scanner
         } catch (FileNotFoundException e) {
-            System.out.println("Error: Can't find the file at" + dataPath("dialogue.txt"));
+            System.out.println("Error: Can't find the file at" + dataPath(filename));
             
         }
     }
@@ -145,15 +145,20 @@ public class MySketch extends PApplet{
             
             if (keyPressed) {
                 if (keyCode == LEFT) {
-                    player.move(-player.getSpeed(),0);
+                    if (player.x > 0) {
+                        player.move(-player.getSpeed(),0);
+                    }
                 } else if (keyCode == RIGHT) {
                     player.move(player.getSpeed(),0);
                 } else if (keyCode == UP) {
-                    player.move(0, -player.getSpeed());
+                    if (player.y > 0) {
+                        player.move(0, -player.getSpeed());
+                    }
                 } else if (keyCode == DOWN) {
-                    player.move(0, player.getSpeed());
+                    if (player.y < height - player.getImage().height) {
+                        player.move(0, player.getSpeed());
+                    }
                 }
-                
             }
             
             if (player.isCollidingWith(ramNPC)) {
@@ -196,13 +201,19 @@ public class MySketch extends PApplet{
                 int dy = 0;
                 
                 if (keyCode == LEFT) {
-                    dx = -player.getSpeed();
+                    if (player.x > 0) {
+                        dx = -player.getSpeed();
+                    }
                 } else if (keyCode == RIGHT) {
                     dx = player.getSpeed();
                 } else if (keyCode == UP) {
-                    dy = -player.getSpeed();
+                    if (player.y > 0) {
+                        dy = -player.getSpeed();
+                    }
                 } else if (keyCode == DOWN) {
-                    dy = player.getSpeed();
+                    if (player.y < height - player.getImage().height) {
+                        dy = player.getSpeed();
+                    }   
                 }
                 
                 player.move(dx, dy);
@@ -308,29 +319,34 @@ public class MySketch extends PApplet{
                     }  
                 }
                 
-                // player movement
+                // movement
                 if (keyPressed) {
                     int dx = 0;
                     int dy = 0;
 
                     if (keyCode == LEFT) {
-                        dx = -player.getSpeed();
+                        if (player.x > 0) {
+                            dx = -player.getSpeed();
+                        }
                     } else if (keyCode == RIGHT) {
                         dx = player.getSpeed();
                     } else if (keyCode == UP) {
-                        dy = -player.getSpeed();
+                        if (player.y > 0) {
+                            dy = -player.getSpeed();
+                        }
                     } else if (keyCode == DOWN) {
-                        dy = player.getSpeed();
+                        if (player.y < height - player.getImage().height) {
+                            dy = player.getSpeed();
+                        }   
                     }
 
-                    // Move the player using the calculated values
                     player.move(dx, dy);
 
                     // If the player is carrying the mountain, move the mountain by the same amount
                     if (isCarryingMountain) {
                         mountain.move(dx, dy);
                     }
-                } 
+                }
             }
             
             player.draw();
@@ -355,29 +371,34 @@ public class MySketch extends PApplet{
             mountain.draw();
             drawHealthBar();
             
-                // player movement
-                if (keyPressed) {
-                    int dx = 0;
-                    int dy = 0;
-
-                    if (keyCode == LEFT) {
+            // movement
+            if (keyPressed) {
+                int dx = 0;
+                int dy = 0;
+                
+                if (keyCode == LEFT) {
+                    if (player.x > 0) {
                         dx = -player.getSpeed();
-                    } else if (keyCode == RIGHT) {
-                        dx = player.getSpeed();
-                    } else if (keyCode == UP) {
+                    }
+                } else if (keyCode == RIGHT) {
+                    dx = player.getSpeed();
+                } else if (keyCode == UP) {
+                    if (player.y > 0) {
                         dy = -player.getSpeed();
-                    } else if (keyCode == DOWN) {
+                    }
+                } else if (keyCode == DOWN) {
+                    if (player.y < height - player.getImage().height) {
                         dy = player.getSpeed();
-                    }
-
-                    // Move the player using the calculated values
-                    player.move(dx, dy);
-
-                    // If the player is carrying the mountain, move the mountain by the same amount
-                    if (isCarryingMountain) {
-                        mountain.move(dx, dy);
-                    }
+                    }   
                 }
+                
+                player.move(dx, dy);
+                
+                // If the player is carrying the mountain, move the mountain by the same amount
+                if (isCarryingMountain) {
+                    mountain.move(dx, dy);
+                }
+            }
             
             if (player.isCollidingWith(sitaNPC)) {
                 image(emptyDialogue, 0,265); //draw the dialogue box
@@ -631,10 +652,9 @@ public class MySketch extends PApplet{
         rect(x, y, barWidth, barHeight, 5);
         
         //name of health bar
-        fill(255);
+        fill(255);  
         textSize(14);
         textAlign(RIGHT, BOTTOM);
         text("DEMON BOSS", x + barWidth, y - 2);
     }
-    
 }
