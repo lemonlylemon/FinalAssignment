@@ -33,7 +33,10 @@ public class PlayerSprite extends Person {
         return monkeyState;
     }
     
+    @Override
     public void update() {
+        super.update();
+        
         if (playerHealth <= MAX_HEALTH/2 && monkeyState == 0) {
             monkeyState = 1;
             playerSpeedMod = 2;

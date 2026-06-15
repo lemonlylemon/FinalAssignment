@@ -40,6 +40,16 @@ public class Person {
     this.image = newImage;
     }
     
+    public void update() {
+    // Shared functionality: Keep ALL characters within horizontal screen bounds
+    // (Assuming a standard 700-pixel wide screen)
+    if (x < 0) {
+        x = 0;
+    } else if (x > 700 - (image != null ? image.width : 0)) {
+        x = 700 - (image != null ? image.width : 0);
+    }
+    }
+    
     // POLYMORPHIC METHOD TO RUN BOTH PERSON COLLISION AND THROW COLLISION
     public boolean isCollidingWith(Object other) {
     int otherX = 0;
