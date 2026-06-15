@@ -9,23 +9,39 @@ import java.util.ArrayList;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 
 /**
- *
- * @author 345954069
+ * The core game architecture controller class using the Processing engine library.
+ * Coordinates system setup, multi-scene execution logic states (Stages 0-10), keyboard inputs, 
+ * dynamic I/O file systems, character rendering loops, and algorithmic custom boss attack vectors.
+ * * @author 345954069
  */
 public class MySketch extends PApplet{
+    
+    // --- Core Entity Game Components
     private PlayerSprite player;
     private Person ramNPC;
     private Person sitaNPC;
     private Throw mountain;
     private Person demonBoss;
+    
+    // --- Boss Navigation Constants and Attributes
     private int bossDirectionY = 1;
     private int bossSpeed = 20;
-    int stage = 0;
     private int bossHealth = 500;
     private int BOSS_MAX_HEALTH = 500;
+    
+    // --- Core Mechanics Flags ---
+    int stage = 0; // Current room state (main menu)
     private boolean isCarryingMountain = false;
+    private boolean bossDoneDialogue = false;
+    private int totalAttempts = 1; //start at first try and tracks it since
+    
+    // --- Visual Graphic Components
     private PImage bg;
     private PImage characterSelect;
     private PImage bgStage1;
@@ -33,55 +49,64 @@ public class MySketch extends PApplet{
     private PImage lairbg;
     private PImage dungeonbg;
     private PImage endScreen;
+    private PImage emptyDialogue;
+    private PImage gameOver;
     
+    //Dialogue Row Index Step Tracking Flags
     private int dialogueStep = 0;
     private int dialogueStage2Step = 0;
     private int dialogueStage3Step = 0;
     private int dialogueStage4Step = 0;
     
-    private PImage dialogue1;
-    private PImage dialogue2;
-    private PImage emptyDialogue;
-    private PImage gameOver;
+    // Array Memory Containers
     private ArrayList<Throw> projectiles = new ArrayList<Throw>();
     private ArrayList<Throw> bossAttacks = new ArrayList<Throw>();
-    
     private ArrayList<String> dialogueLines = new ArrayList<String>(); // Use an ArrayList for dynamic loading
     private ArrayList<String> dialogueStage2Lines = new ArrayList<String>(); // Use an ArrayList for dynamic loading
     private ArrayList<String> dialogueStage3Lines = new ArrayList<String>(); // Use an ArrayList for dynamic loading
     private ArrayList<String> dialogueStage4Lines = new ArrayList<String>(); // Use an ArrayList for dynamic loading
 
-    private boolean bossDoneDialogue = false;
-    
+    /**
+     * Algorithmic 2D grid matrix pattern array defining the dangerous firing vectors for the Boss.
+     * Evaluates spatial locations where 1 spawns an active fireball projectile and 0 provides safe harbor.
+     */
     //boss attack pattern: 1 = spawn fireball, 0 = safe area
     private int [][] bossPattern = {
         {1, 0, 1}, 
         {1, 1, 0},
         {0, 1, 1}
     };
-
     
+
+    /**
+     * Allocates standard system application container resolution scales.
+     * Configures specific native display window dimensions before hardware initialization.
+     */
     public void settings() {
         size(700,400);
     }
     
+    /**
+     * Initializes structural memory storage nodes, registers graphic components, and builds custom entity parameters.
+     * Handles early setup tasks, character instantiations, and sequentially initiates text resource stream reads.
+     */
     public void setup() {
         background(255);
+        
+        // Character Entity Instantiations
         player = new PlayerSprite (this, 200, 200, 0, "images/monkeykingidle.png");
-        mountain = new Throw (this, 342,238, "images/mountainResize.png");
+        mountain = new Throw (this, 342,208, "images/mountainResize.png");
+        ramNPC = new Person(this, 100, 160, "images/ram2.png");
+        sitaNPC = new Person(this, 500, 160, "images/sitaResize.png");
+        demonBoss = new Person(this, 500, 20, "images/demonResizes.png");
+        
+        // Graphic Loading
         bg = loadImage("images/mainmenubg.png");
         bgStage1 = loadImage("images/stage1_2.jpg");
         bossroom = loadImage("images/bossroom.jpg");
         characterSelect = loadImage("images/menuscreenking.png");
-        ramNPC = new Person(this, 100, 160, "images/ram2.png");
-        sitaNPC = new Person(this, 500, 160, "images/sitaResize.png");
-        demonBoss = new Person(this, 500, 20, "images/demonResizes.png");
         lairbg = loadImage("images/demonlair.jpg");
         lairbg.resize(700,0);
-        dialogue1 = loadImage("images/dialoguePic1.png");
-        dialogue1.resize(700, 0);
-        dialogue2 = loadImage("images/dialoguePic2.png");
-        dialogue2.resize(700, 0);
         emptyDialogue = loadImage("images/emptyDialogue.png"); //image for the text
         emptyDialogue.resize(700,0);
         gameOver = loadImage("images/gameOver.jpg");
@@ -91,14 +116,19 @@ public class MySketch extends PApplet{
         endScreen = loadImage("images/endScreen.jpg");
         endScreen.resize(700, 0);
         
+        // FLAT-FILE INPUT
         loadDialogueFile(dialogueLines, "dialogue.txt"); //do the fileIO inside a method
         loadDialogueFile(dialogueStage2Lines, "dialogue2.txt");
         loadDialogueFile(dialogueStage3Lines, "dialogue3.txt");
-        loadDialogueFile(dialogueStage4Lines, "dialogue4.txt");
-
-        
+        loadDialogueFile(dialogueStage4Lines, "dialogue4.txt"); 
     }
     
+    /**
+     * Establishes a sequential text connection line reader stream utilizing Scanner variables (File Input).
+     * Extracts lines step-by-step from external plain text storage and populates dynamic structural runtime text arrays.
+     * * @param list     The generic target Collection ArrayList array tracking text structures.
+     * @param filename The exact localized directory tracking asset files to be parsed.
+     */
     public void loadDialogueFile(ArrayList list, String filename) {
         try {
             File file = new File(dataPath(filename));
@@ -116,10 +146,14 @@ public class MySketch extends PApplet{
         }
     }
     
+    /**
+     * Execution rendering engine cycle method. Runs consecutively frame-by-frame 
+     * to manage graphic switches, entity status ticks, text interfaces, bounds verification, and collision actions.
+     */
     public void draw() {
         image(bg, 0, 0, width, height);
        
-        
+        // ================= STAGE 0: MAIN SCREEN INTERFACE =================
         if (stage == 0) {
             textSize(30);
             image(characterSelect, 120, 30, 450, 397);
@@ -127,7 +161,8 @@ public class MySketch extends PApplet{
             fill(0);
             text("My Cultural Story", width/2,50);
             text("Press ENTER to continue", width/2, 100); 
-            
+        
+            // ================= STAGE 1: RAM OVERWORLD MAP DIALOGUE ZONE =================
         } else if (stage == 1) {
             textSize(20);
             fill(0);
@@ -167,6 +202,7 @@ public class MySketch extends PApplet{
                 }
             }
             
+            // check collison between player and the guide character
             if (player.isCollidingWith(ramNPC)) {
                 image(emptyDialogue, 0,265); //draw the dialogue box
                 
@@ -183,12 +219,14 @@ public class MySketch extends PApplet{
             }
 
             //If player goes all the way to the right side of current room
+            // Room Edge Transition Check: Move into Stage 2 space when walking past the right edge
             if (player.x > width) {
                 fill(255, 0, 0);
                 stage = 2;
                 player.x = 0; // Moves player to the left side of new room
             }
-                        
+            
+        // ================= STAGE 2: MOUNTAIN DECISION =================
         } else if (stage == 2) {
             fill(0);
             image(bossroom, 0,0, width, height); //loads new room bg
@@ -201,7 +239,7 @@ public class MySketch extends PApplet{
             //check if player is touching mountian but not picked it up yet
             boolean touchingMountain = player.isCollidingWith((Object) mountain) && !isCarryingMountain;
             
-            // movement
+            // movement without mountain
             if (keyPressed && !touchingMountain) {
                 int dx = 0;
                 int dy = 0;
@@ -258,7 +296,7 @@ public class MySketch extends PApplet{
                 player.x = width; // Moves player to the right side of new room
             }
             
-            //room of stage 3
+            //room of stage 3 9go to next room) 
             if (player.x > width) {
                 fill(255, 0, 0);
                 stage = 3;
@@ -273,7 +311,8 @@ public class MySketch extends PApplet{
 
             player.x = 0; // Moves player to the left side of new room
             }
-            
+        
+        // ================= STAGE 3: CHIEF DEMON BOSS COMBAT ROOM =================
         } else if (stage == 3) {
             fill(0);
             image(lairbg, 0,0, width, height); //loads new room bg
@@ -303,7 +342,7 @@ public class MySketch extends PApplet{
                 demonBoss.move(0, (int)(bossSpeed * bossDirectionY));
 
                 //BOSS ATTACKS (RANDOM)
-                if (frameCount % 20 == 0) { //for each 60 frames, one projectile is thrown
+                if (frameCount % 20 == 0) { //for each 20 frames, one projectile is thrown
                     //spawn projectile form boss current posiiton
                     Throw bossAttack = new Throw(this, demonBoss.x, demonBoss.y, "images/demonFireballs.png", -10);
                     bossAttacks.add(bossAttack);
@@ -327,7 +366,8 @@ public class MySketch extends PApplet{
                         }
                     }
                 }
-
+                
+                // track projectile updates and check damage
                 for (int i = bossAttacks.size() - 1; i>=0; i--) {
                     Throw ba = bossAttacks.get(i);
                     ba.update(); //speed at which boss projectiles goes left
@@ -384,11 +424,13 @@ public class MySketch extends PApplet{
             drawBossHealthBar();
             
             manageProjectiles();
-            
+        
+        // ================= STAGE 9: PLAYER GAME OVER ROOM =================
         } else if (stage == 9) {
             fill(0);
             image(gameOver, 0,0, width, height); //loads new room bg
-            
+        
+        // ================= STAGE 4: DUNGEON SAVING DIALOGUE ROOM =================
         } else if (stage == 4) {
             fill(0);
             image(dungeonbg, 0, 0, width, height);
@@ -440,16 +482,22 @@ public class MySketch extends PApplet{
                 }
             }
             if (dialogueStage4Step >= dialogueStage4Lines.size()) {
-                stage = 10;
+                stage = 10; // Trigger completion sequence when dialog reaches end line
             }
             
+        // ================= STAGE 10: END ROLL SUMMARY INTERFACE =================
         } else if (stage == 10) {
             fill(0);
             image(endScreen, 0,0, width, height);
             textSize(32);
             fill(50,250,50);
             textAlign(CENTER, CENTER);
-            text("SITA IS RESCUED!", width/2, 300);
+            text("SITA IS RESCUED!", width/2, 260);
+            
+            //display tries
+            textSize(24);
+            fill(255, 215, 0); // Yellow color text
+            text("It took you " + totalAttempts + " try(s)!", width / 2, 310);
             
             textSize(20);
             fill(255);
@@ -457,17 +505,21 @@ public class MySketch extends PApplet{
         }
         
     }
-            
+    
+    /**
+     * Intercepts key release events to drive text indexing progressions, 
+     * process reset mechanisms, handle dynamic action links, and manage projectile initialization.
+     */
     public void keyPressed() {
-        if (stage == 9 || stage == 10) {
+        if (stage == 9 || stage == 10) { //if come to game over ir victory screen
             player.playerHealth = player.MAX_HEALTH;
             player.x = 200;
             player.y = 200;
             
             player.resetPowerUp();
-            player.image = loadImage("images/monkeykingidle.png");
+            player.image = loadImage("images/monkeykingidle.png"); //original monkey king image
             
-
+            bossDoneDialogue = false; //reset dialogue
             
             //remove any remaining projectiles
             projectiles.clear();
@@ -531,7 +583,7 @@ public class MySketch extends PApplet{
                     if (dialogueStage3Step < dialogueStage3Lines.size() - 1) {
                         dialogueStage3Step++;
                     } else {
-                        bossDoneDialogue = true;
+                        bossDoneDialogue = true; // Unlock live action combat operations
                         dialogueStage3Step = 0;
                     }
                 }
@@ -579,10 +631,17 @@ public class MySketch extends PApplet{
         }
     }
     
+    /**
+     * Diagnostic developer helper tool capturing tracking position metrics on clicking display screens.
+     */
     public void mousePressed() {
         System.out.println("x: " + mouseX + " y: "  + mouseY);
     }
     
+    /**
+     * Loops through tracking buffers to recalculate positioning offsets for all flying projectiles.
+     * Evaluates real-time bounding box collisions against boss models and writes state outputs upon clear conditions.
+     */
     //method to keep stage blocks organized
     public void manageProjectiles() {
         for (int i = projectiles.size() - 1; i >= 0; i--) {
@@ -604,6 +663,9 @@ public class MySketch extends PApplet{
                     player.x = 100;
                     player.y = 200;
                     
+                    // FLAT-FILE OUTPUT
+                    saveVictoryRecord(totalAttempts);
+                    
                     //ensures that mountain is perfectly on top of player
                     if (isCarryingMountain) {
                         mountain.x = player.x + (player.getImage().width / 2) - (mountain.image.width / 2);
@@ -619,14 +681,20 @@ public class MySketch extends PApplet{
         }
     }
     
-    
+    /**
+     * Dynamically renders standard UI overlay structures to visually display player health.
+     * Evaluates zero bounds flags to route players directly down into stage index 9 failure scenes.
+     */
     //HEALTH OF MONKEY KING
     public void drawHealthBar() {
         
         //check for if player has died
         if (player.playerHealth <= 0) {
             player.playerHealth = 0;
-            stage = 9;
+            
+                stage = 9;
+            
+            totalAttempts++; //increment # of tries
             return;
         }
 
@@ -641,22 +709,26 @@ public class MySketch extends PApplet{
         // Stop the bar from stretching if health is out of bounds
         healthRatio = constrain(healthRatio, 0, 1); 
 
-        // 2. Draw the background (Red/Empty bar)
+        //background (Red/Empty bar)
         fill(250, 50, 50);
         noStroke();
         rect(x, y, barWidth, barHeight, 5); // 5 is for slightly rounded corners
 
-        // 3. Draw the foreground (Green/Current health)
+        //foreground (Green/Current health)
         fill(50, 220, 50);
         rect(x, y, barWidth * healthRatio, barHeight, 5);
 
-        // Optional: Add a nice dark border around the whole thing
+        //dark border around the whole thing
         noFill();
         stroke(0);
         strokeWeight(2);
         rect(x, y, barWidth, barHeight, 5);
     }
     
+    /**
+     * Dynamically calculates and renders custom scaling right-aligned progress indicators tracking Boss HP. 
+     * Doing the same thing as monkey king health bar basically
+     */
     public void drawBossHealthBar() {
         float barWidth = 200;
         float barHeight = 20;
@@ -684,5 +756,30 @@ public class MySketch extends PApplet{
         textSize(14);
         textAlign(RIGHT, BOTTOM);
         text("DEMON BOSS", x + barWidth, y - 2);
+    }
+    
+    /**
+     * Establishes automated writer channels using PrintWriter and FileWriter combinations (File Output).
+     * Creates or overwrites sequential database logs with score tracking statistics instantly upon triggering conditions.
+     * * @param attempts The active integer index tracking current game runs.
+     */
+    //save game tried to a flat-file database (File Output)
+    public void saveVictoryRecord(int attempts) {
+        try {
+            //file location using Processing's dataPath()
+            File file = new File(dataPath("attempts.txt"));
+
+            //output text to the file
+            PrintWriter writer = new PrintWriter(new FileWriter(file));
+
+            //number of tries into the file
+            writer.println("Sita rescued in " + attempts + " attempt(s)!");
+            
+            writer.close();
+
+            System.out.println("Victory database successfully updated on disk!");
+        } catch (IOException e) {
+            System.out.println("Error: Could not save data to file");
+        }
     }
 }
