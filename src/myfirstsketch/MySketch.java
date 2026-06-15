@@ -22,7 +22,6 @@ public class MySketch extends PApplet{
     private Person demonBoss;
     private int bossDirectionY = 1;
     private int bossSpeed = 20;
-    private int bossHitSpeed = 10;
     int stage = 0;
     private int bossHealth = 500;
     private int BOSS_MAX_HEALTH = 500;
@@ -279,6 +278,8 @@ public class MySketch extends PApplet{
             fill(0);
             image(lairbg, 0,0, width, height); //loads new room bg
             
+            player.update(); //check if player has awakened
+            
             if (bossDoneDialogue == false) {
                 image(emptyDialogue, 0,265); //draw the dialogue box
                 
@@ -304,7 +305,7 @@ public class MySketch extends PApplet{
                 //BOSS ATTACKS (RANDOM)
                 if (frameCount % 20 == 0) { //for each 60 frames, one projectile is thrown
                     //spawn projectile form boss current posiiton
-                    Throw bossAttack = new Throw(this, demonBoss.x, demonBoss.y, "images/demonFireballs.png");
+                    Throw bossAttack = new Throw(this, demonBoss.x, demonBoss.y, "images/demonFireballs.png", -10);
                     bossAttacks.add(bossAttack);
                 }
                 
@@ -320,7 +321,7 @@ public class MySketch extends PApplet{
                                 int spawnX = demonBoss.x + (c * spacingX);
                                 int spawnY = demonBoss.y + (r * spacingY);
 
-                                Throw bossAttack = new Throw(this, spawnX, spawnY, "images/demonFireballs.png");
+                                Throw bossAttack = new Throw(this, spawnX, spawnY, "images/demonFireballs.png", -10);
                                 bossAttacks.add(bossAttack);
                             }
                         }
@@ -329,7 +330,7 @@ public class MySketch extends PApplet{
 
                 for (int i = bossAttacks.size() - 1; i>=0; i--) {
                     Throw ba = bossAttacks.get(i);
-                    ba.x -= bossHitSpeed; //speed at which boss projectiles goes left
+                    ba.update(); //speed at which boss projectiles goes left
                     ba.draw();
 
                     if (player.isCollidingWith((Object) ba)) {
@@ -462,6 +463,11 @@ public class MySketch extends PApplet{
             player.playerHealth = player.MAX_HEALTH;
             player.x = 200;
             player.y = 200;
+            
+            player.resetPowerUp();
+            player.image = loadImage("images/monkeykingidle.png");
+            
+
             
             //remove any remaining projectiles
             projectiles.clear();

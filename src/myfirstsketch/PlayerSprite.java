@@ -34,10 +34,22 @@ public class PlayerSprite extends Person {
     }
     
     public void update() {
-        if (playerHealth <= MAX_HEALTH/2) {
-            monkeyState++;
+        if (playerHealth <= MAX_HEALTH/2 && monkeyState == 0) {
+            monkeyState = 1;
             playerSpeedMod = 2;
             damageMod = 2;
+            
+            PImage powerUpImage = app.loadImage("images/supermonkeyking.png");
+            this.setImage(powerUpImage);
+            
+            System.out.println("The Monkey King has awakened! Speed and Damage doubled!");
         }
+    }
+    
+    // Add this inside your PlayerSprite class
+    public void resetPowerUp() {
+        this.monkeyState = 0;
+        this.playerSpeedMod = 1;
+        this.damageMod = 1;
     }
 }

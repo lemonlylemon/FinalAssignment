@@ -19,7 +19,7 @@ public class Throw {
     private static final int BASE_DAMAGE = 28;
     private int damageMod;
     
-    // Define screen dimensions (adjust these numbers to match your actual window size)
+    // Define screen dimensions
     private static final int SCREEN_WIDTH = 700;
     private static final int SCREEN_HEIGHT = 400;
     
@@ -29,6 +29,15 @@ public class Throw {
         this.y = y;
         this.image = app.loadImage(imagePath);
         this.objectSpeed = BASE_PROJECTILE_SPEED;
+        this.damage = BASE_DAMAGE;
+    }
+    
+    public Throw(PApplet p, int x, int y, String imagePath, int customSpeed) {
+        this.app = p;
+        this.x = x;
+        this.y = y;
+        this.image = app.loadImage(imagePath);
+        this.objectSpeed = customSpeed;
         this.damage = BASE_DAMAGE;
     }
     

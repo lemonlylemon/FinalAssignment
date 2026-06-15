@@ -11,8 +11,8 @@ import processing.core.PImage;
  */
 public class Person {
     public int x, y ; //postion of person
-    private PImage image;
-    private PApplet app;
+    public PImage image;
+    public PApplet app;
     
         
     public Person(PApplet p, int x, int y, String imagePath) {
@@ -34,7 +34,11 @@ public class Person {
     
     public PImage getImage() {
     return this.image;
-}
+    }
+    
+    public void setImage(PImage newImage) {
+    this.image = newImage;
+    }
     
     // POLYMORPHIC METHOD TO RUN BOTH PERSON COLLISION AND THROW COLLISION
     public boolean isCollidingWith(Object other) {
